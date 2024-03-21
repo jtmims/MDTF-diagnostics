@@ -47,10 +47,11 @@ Notes:
       - variable units
       - variable dimensions (e.g., [time, lat, lon])
       - variable realm (e.g., atmos, ocean ice, land)
-      - scalar coordinates for variables defined on a specific atmospheric pressure level (e.g. ``{"lev": 250}``
-for a field on the 250-hPa p level).
+      - scalar coordinates for variables defined on a specific atmospheric pressure level (e.g. ``{"lev": 250}`` for a field on the 250-hPa p level).
+   
    - If your variable is not in the necessary fieldlist file(s), add them to the file(s), or open an issue on GitHub requesting that the framework team add them. Once the files are updated, merge the changes from the main branch into your POD branch.
    - Note that the variable name and the standard name must be unique fieldlist entries
+
 - Environment variables
    - To define an environment variable specific to your POD, add a ``"pod_env_vars"`` block to the ``"settings"`` block in your POD's ``settings.jsonc`` file and define the desired variables
    - Reference an environment variable associated with a specific case in Python by calling ``os.environ[case_env_file]``, reading the file contents into a Python dictionary, and getting value associated with the first case (assuming variable names and coordinates are identical for each case), e.g. ``tas_var = [case['tas_var'] for case in case_list.values()][0]``. See ``example_multicase.py`` for more information.

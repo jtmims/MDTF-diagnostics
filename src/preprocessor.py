@@ -1054,7 +1054,6 @@ class MDTFPreprocessorBase(metaclass=util.MDTFABCMeta):
                     time_sort_dict = {f: cat_subset_df[f].time.values[0]
                                       for f in list(cat_subset_df)}
                     time_sort_dict = dict(sorted(time_sort_dict.items(), key=lambda item: item[1]))
-
                     for k in list(time_sort_dict):
                         if not var_xr:
                             var_xr = cat_subset_df[k]
@@ -1409,9 +1408,9 @@ class MDTFPreprocessorBase(metaclass=util.MDTFABCMeta):
                     varlist_ex.remove(tv_name)
                 for v_d in var_xr_dataset.variables:
                     if v_d not in varlist_ex:
-                        cat_subset[case_name].update({v_d: var_xr_dataset[v_d]})
+                        var_xr_dataset.update({v_d: var_xr_dataset[v_d]})
                 pp_func_dataset = self.execute_pp_functions(v,
-                                                            cat_subset[case_name],
+                                                            var_xr_dataset,
                                                             work_dir=model_work_dir[case_name],
                                                             case_name=case_name)
                 cat_subset[case_name] = pp_func_dataset

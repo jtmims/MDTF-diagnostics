@@ -18,7 +18,7 @@
 #   Open source copyright agreement
 #
 #   The MDTF framework is distributed under the LGPLv3 license (see LICENSE.txt).
-#   Unless you've distirbuted your script elsewhere, you don't need to change this.
+#   Unless you've distributed your script elsewhere, you don't need to change this.
 #
 #   Functionality
 #
@@ -64,6 +64,8 @@ import cartopy.feature as cfeature
 import gsw
 import time
 import datetime
+import yaml
+import intake
 
 months = [
     "Jan",
@@ -87,6 +89,18 @@ WK_DIR = os.environ["WORK_DIR"]
 CASENAME = os.environ["CASENAME"]
 modelname = CASENAME
 
+# Read case_env_file and load catalog
+case_env_file = os.environ["case_env_file"]
+assert os.path.isfile(case_env_file), f"case environment file not found"
+with open(case_env_file, 'r') as stream:
+    try:
+        case_info = yaml.safe_load(stream)
+    except yaml.YAMLError as exc:
+        print(exc)
+
+cat_def_file = case_info['CATALOG_FILE']
+cat = intake.open_esm_datastore(cat_def_file)
+
 
 def readinocndata(file, varname="so", firstyr="2010", lastyr="2014"):
     ds = xr.open_dataset(file)
@@ -98,14 +112,18 @@ def readinocndata(file, varname="so", firstyr="2010", lastyr="2014"):
     print(
         "Limit domain to Arctic to match obs"
     )  # script would work fine if data were global
-
+    print(ds['xh'])
     if "lat" in ds:  # hacky, fix this
         ds = ds.rename({'lat': 'latitude'})
+    if "yh" in ds:
+        ds = ds.rename({'yh': 'latitude'})
     ds = ds.where(
         ds.latitude > 30.0, drop=True # limit to arctic for now, remove later
     )
     if "lon" in ds:
         ds = ds.rename({'lon': 'longitude'})
+    if 'xh' in ds:
+        ds = ds.rename({'xh': 'latitude'})
     field = ds[varname]
     field.name = varname
 
@@ -296,10 +314,13 @@ thetao_var = "{thetao_var}".format(**os.environ)
 firstyr = "{startdate}".format(**os.environ)
 lastyr = "{enddate}".format(**os.environ)
 
+print(firstyr)
+print(lastyr)
+
 print("thetao_var, so_var, startdate, enddate: ", thetao_var, so_var, firstyr, lastyr)
 
-input_file_so = DATADIR+"/mon/"+CASENAME+"."+so_var+".mon.nc"
-input_file_thetao = DATADIR+"/mon/"+CASENAME+"."+thetao_var+".mon.nc"
+input_file_so = cat.search(variable_id=so_var, frequency="mon").df['path'][0]
+input_file_thetao = cat.search(variable_id=thetao_var, frequency="mon").df['path'][0]
 
 output_dir = os.path.join(WK_DIR, "model")  # LR
 figures_dir = os.path.join(WK_DIR, "model")  # LR
